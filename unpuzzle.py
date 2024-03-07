@@ -14,35 +14,36 @@ def swap():
 def spacial_location_check(cx,cy):
     global x
     chk=-1
-    for i in range(4):
-        for j in range(4):
+    for i in range(5):
+        for j in range(5):
             chk+=1
             if cx in range(bxs[j,i,0],bxl[j,i,0]) and cy in range(bxs[j,i,1],bxl[j,i,1]):
                 x.append([i,j])
                 if x[0]!=x[-1]:
                     x=[]
-                elif len(x)==16:
+                elif len(x)==25:
                     stack.append(chk)
                     if len(stack)>1:
                         swap()
                     x=[]
 
 if __name__ == '__main__':
-    bxs = np.full((4, 4, 2), 0)
-    bxl = np.full((4, 4, 2), 0)
+    bxs = np.full((5, 5, 2), 0)
+    bxl = np.full((5, 5, 2), 0)
     si = 600
-    bl = [0, si // 4, (si // 4) * 2, (si // 4) * 3, si]  # Divide en 4 partes iguales
-    for i in range(4):
-        for j in range(4):
+    bl = [0, si // 5, (si // 5) * 2, (si // 5) * 3, (si // 5) * 4, si]  # Divide en 5 partes iguales
+    for i in range(5):
+        for j in range(5):
             bxs[i, j] = (bl[i], bl[j])
             bxl[i, j] = (bl[i + 1], bl[j + 1])
+
         
     # Load Puzzle image, split image into pieces and randomly shuffle the frames
     imgx = cv2.imread(r'C:\Users\Brenda\Pictures\Screenshots\Captura de pantalla 2024-03-06 162845.png')
     imgx = cv2.resize(imgx,(si,si), fx = 0.1, fy = 0.1)
     stack,x,shl=[],[],[]
-    for i in range(4):
-            for j in range(4):
+    for i in range(5):
+            for j in range(5):
                 shl.append(imgx[bl[i]:bl[i+1],bl[j]:bl[j+1]])
     random.shuffle(shl)
 
@@ -66,8 +67,8 @@ if __name__ == '__main__':
         imageRGB = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         results = hands.process(imageRGB)
         ck=0
-        for i in range(4):
-            for j in range(4):
+        for i in range(5):
+            for j in range(5):
                 if ck in stack:
                     image[bl[i]:bl[i+1],bl[j]:bl[j+1]]=cv2.blur(shl[ck],ksize=(15,15))
                 else:
