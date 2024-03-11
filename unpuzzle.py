@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
         
     # Load Puzzle image, split image into pieces and randomly shuffle the frames
-    imgx = cv2.imread(r'C:\Users\Brenda\Pictures\Screenshots\Captura de pantalla 2024-03-06 162845.png')
+    imgx = cv2.imread(r'img.jpg')
     imgx = cv2.resize(imgx,(si,si), fx = 0.1, fy = 0.1)
     stack,x,shl=[],[],[]
     for i in range(5):
