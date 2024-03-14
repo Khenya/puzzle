@@ -2,6 +2,9 @@ import cv2
 import numpy as np
 import mediapipe as mp
 import random
+import os
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
 
 # Swap two frames in the image
 def swap():
@@ -77,14 +80,28 @@ if __name__ == '__main__':
                 
         # Locate spatial location of finger and mark image frame piece and swap pieces
         if results.multi_hand_landmarks:
+            cxi = 100000
+            cxp = 100000 
+            cyi = 0
+            cyp = 0 
             for handLms in results.multi_hand_landmarks: 
                 for id, lm in enumerate(handLms.landmark):
                     if id == 8 :
                         h, w, c = image.shape
-                        cx, cy = int(lm.x * w), int(lm.y * h)
-                        spacial_location_check(cx,cy)
-                        cv2.circle(image, (cx, cy), 25, (255, 0, 0), cv2.FILLED)
+                        cxi, cyi = int(lm.x * w), int(lm.y * h)
+                        cv2.circle(image, (cxi, cyi), 25, (255, 0, 0), cv2.FILLED)
+                    if id == 4:
+                        h, w, c = image.shape
+                        cxp, cyp = int(lm.x * w), int(lm.y * h)
+                        cv2.circle(image, (cxp, cyp), 25, (255, 0, 0), cv2.FILLED)
+                    
+                    distance = np.sqrt((cxi - cxp)**2 + (cyi - cyp)**2)
+                    # print (distance)
+                    if distance < 50 and distance > 0:
+                        spacial_location_check(cxi,cyi)
+
                 mp_drawing.draw_landmarks(image, handLms, mp_hands.HAND_CONNECTIONS)
+
         cv2.imshow("output", image)
         if (cv2.waitKey(1) & 0xFF == ord('q')):
                 break
