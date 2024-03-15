@@ -99,6 +99,8 @@ if __name__ == '__main__':
                     # print (distance)
                     if distance < 50 and distance > 0:
                         spacial_location_check(cxi,cyi)
+                        cv2.circle(image, (cxi, cyi), 25, (0, 0, 255), cv2.FILLED)
+                        cv2.circle(image, (cxp, cyp), 25, (0, 0, 255), cv2.FILLED)
 
                 mp_drawing.draw_landmarks(image, handLms, mp_hands.HAND_CONNECTIONS)
 
