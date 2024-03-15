@@ -5,24 +5,36 @@ import cv2
 cap = cv2.VideoCapture(0)
 
 # Define the new color in formate RGB
-new_color = (0, 0, 255)  # red
+new_color = (255, 255, 255)  # red
+
+def es_piel(rgb):
+    return rgb[2]>95 and rgb[1]>40 and rgb[0]>20 and (max(rgb)-min(rgb)>15) and \
+        abs(rgb[2]-rgb[1])>15 and rgb[2]>rgb[1] and rgb[2]>rgb[0]
+
+# Cambiar para ajustar el tamaño de la pantalla
+si = 600
+
+# Cambiar para ajustar la precisión (1px,3px)
+pr = 2
 
 while True:
     # Read a frame from the camera
     ret, frame = cap.read()
 
+    frame = cv2.flip(frame,1)
+    frame = cv2.resize(frame,(si+200,si), fx = 0.1, fy = 0.1)
+
     # Get the height and width of the frame
     height, width, _ = frame.shape
 
     # Loop through all the pixels in the frame and change their color
-    for y in range(height):
-        for x in range(width):
+    for y in range(pr-1,height,pr):
+        for x in range(pr-1,width,pr):
             pixel = frame[y, x].astype('float')
-            if (pixel[2] > 95 and pixel[1] > 40 and pixel[0] > 20) and (max(pixel[0:2]) - min(pixel[0:2]) > 15) and (
-                    abs(pixel[2] - pixel[1]) > 15) and (pixel[2] > pixel[1] and pixel[2] > pixel[0]):
-                frame[y, x] = new_color
+            if es_piel(pixel):
+                frame[y-pr:y, x-pr:x] = new_color
             else:
-                frame[y, x] = (0, 0, 0)
+                frame[y-pr:y, x-pr:x] = (0, 0, 0)
 
     # Display the resulting frame
     cv2.imshow('Frame', frame)
