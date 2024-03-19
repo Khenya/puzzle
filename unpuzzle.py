@@ -9,7 +9,7 @@ patito = npiezas * npiezas
 # ganaste???
 def win():
     global stack,shl
-    shl[stack[0]],shl[stack[1]]
+    # shl[stack[0]],shl[stack[1]]
 
 # Swap two frames in the image
 def swap():
@@ -21,6 +21,7 @@ def swap():
 
 # Identify spatial location and swap frames
 def spacial_location_check(cx,cy):
+    time_to_select = 100
     global x
     chk=-1
     for i in range(npiezas):
@@ -30,7 +31,7 @@ def spacial_location_check(cx,cy):
                 x.append([i,j])
                 if x[0]!=x[-1]:
                     x=[]
-                elif len(x)==patito:
+                elif len(x)==time_to_select:
                     stack.append(chk)
                     if len(stack)>1:
                         swap()
@@ -54,8 +55,8 @@ if __name__ == '__main__':
     imgx = cv2.resize(imgx,(si,si), fx = 0.1, fy = 0.1)
     stack,x,shl=[],[],[]
     for i in range(npiezas):
-            for j in range(npiezas):
-                shl.append(imgx[bl[i]:bl[i+1],bl[j]:bl[j+1]])
+        for j in range(npiezas):
+            shl.append(imgx[bl[i]:bl[i+1],bl[j]:bl[j+1]])
     random.shuffle(shl)
 
     # Capture live video
@@ -82,6 +83,8 @@ if __name__ == '__main__':
         imageRGB = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         results = hands.process(imageRGB)
         ck=0
+
+        # Draw pieces over image
         for i in range(npiezas):
             for j in range(npiezas):
                 if ck in stack:
@@ -109,15 +112,16 @@ if __name__ == '__main__':
                     
                     distance = np.sqrt((cxi - cxp)**2 + (cyi - cyp)**2)
                     if distance < 50 and distance > 0:
-                        spacial_location_check(cxi,cyi)
                         cv2.circle(image, (cxi, cyi), 25, (0, 0, 255), cv2.FILLED)
                         cv2.circle(image, (cxp, cyp), 25, (0, 0, 255), cv2.FILLED)
+                        spacial_location_check(cxi,cyi)
 
                 mp_drawing.draw_landmarks(image, handLms, mp_hands.HAND_CONNECTIONS)
 
-        cv2.imshow("output", f)
+        if type(f) != type(None):
+            cv2.imshow("output", f)
         cv2.imshow("output", image)
         if (cv2.waitKey(1) & 0xFF == ord('q')):
-                break
+            break
     cv2.destroyAllWindows()
     cap.release()
