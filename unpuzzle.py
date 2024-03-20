@@ -3,8 +3,9 @@ import numpy as np
 import mediapipe as mp
 import random
 
-npiezas = 3
+npiezas = 4
 patito = npiezas * npiezas
+rad = 25
 
 # ganaste???
 def win():
@@ -21,27 +22,24 @@ def swap():
 
 # Identify spatial location and swap frames
 def spacial_location_check(cx,cy):
-    time_to_select = 100
-    global x
+    # time_to_select = 100
+    # global x
     chk=-1
     for i in range(npiezas):
         for j in range(npiezas):
             chk+=1
             if cx in range(bxs[j,i,0],bxl[j,i,0]) and cy in range(bxs[j,i,1],bxl[j,i,1]):
-                x.append([i,j])
-                if x[0]!=x[-1]:
-                    x=[]
-                elif len(x)==time_to_select:
-                    stack.append(chk)
-                    if len(stack)>1:
-                        swap()
-                    x=[]
+                return chk
+    return -1
 
 if __name__ == '__main__':
     bxs = np.full((npiezas, npiezas, 2), 0)
     bxl = np.full((npiezas, npiezas, 2), 0)
     si = 600
-    bl = [0, si // npiezas, (si // npiezas) * 2, (si // npiezas) * 3, (si // npiezas) * 4, si]  # Divide en 5 partes iguales
+    # bl = [0, si // npiezas, (si // npiezas) * 2, (si // npiezas) * 3, (si // npiezas) * 4, si]
+    # Divide en partes iguales
+    bl = [(si // npiezas) * i for i in range(npiezas+1)]  
+
     for i in range(npiezas):
         for j in range(npiezas):
             bxs[i, j] = (bl[i], bl[j])
@@ -71,9 +69,11 @@ if __name__ == '__main__':
     # Drawing function of hand landmarks on the image
     mp_drawing = mp.solutions.drawing_utils
 
-    
+    prev = False
+    act = False    
 
-    while True:
+
+    while True:        
         # Capture and process image frame from video
         success, f = fin.read()
 
@@ -104,19 +104,39 @@ if __name__ == '__main__':
                     if id == 8 :
                         h, w, c = image.shape
                         cxi, cyi = int(lm.x * w), int(lm.y * h)
-                        cv2.circle(image, (cxi, cyi), 25, (255, 0, 0), cv2.FILLED)
+                        cv2.circle(image, (cxi, cyi), rad, (255, 0, 0), cv2.FILLED)
                     if id == 4:
                         h, w, c = image.shape
                         cxp, cyp = int(lm.x * w), int(lm.y * h)
-                        cv2.circle(image, (cxp, cyp), 25, (255, 0, 0), cv2.FILLED)
+                        cv2.circle(image, (cxp, cyp), rad, (255, 0, 0), cv2.FILLED)
                     
-                    distance = np.sqrt((cxi - cxp)**2 + (cyi - cyp)**2)
-                    if distance < 50 and distance > 0:
-                        cv2.circle(image, (cxi, cyi), 25, (0, 0, 255), cv2.FILLED)
-                        cv2.circle(image, (cxp, cyp), 25, (0, 0, 255), cv2.FILLED)
-                        spacial_location_check(cxi,cyi)
-
                 mp_drawing.draw_landmarks(image, handLms, mp_hands.HAND_CONNECTIONS)
+
+            distance = np.sqrt((cxi - cxp)**2 + (cyi - cyp)**2)
+            act = distance < 2*rad and distance > 0
+            
+            # The state has changed
+            chg = prev!=act
+            
+            if act:
+                cv2.circle(image, (cxi, cyi), rad, (0, 0, 255), cv2.FILLED)
+                cv2.circle(image, (cxp, cyp), rad, (0, 0, 255), cv2.FILLED)
+            
+            if chg:
+                piece = spacial_location_check(cxp,cyp)
+                # print(piece)
+                if piece!=-1:
+                    if act:
+                        stack.append(piece)
+                    elif len(stack)==1:
+                        stack.append(piece)
+                        swap()
+                else:
+                    stack=[]
+                # print(stack)
+
+            prev = act
+        
 
         if type(f) != type(None):
             cv2.imshow("output", f)
