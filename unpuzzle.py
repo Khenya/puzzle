@@ -3,13 +3,17 @@ import numpy as np
 import mediapipe as mp
 import random
 
-npiezas = 4
+npiezas = 2
 patito = npiezas * npiezas
 rad = 25
 
+win=False
+
 # ganaste???
-def win():
-    global stack,shl
+def iwin():
+    global shl,sshl, win, image,imgx
+    # win = np.array_equal(image[0:si,0:si],imgx[0:si,0:si])
+    win = np.array_equal(np.array(shl),np.array(sshl))
     # shl[stack[0]],shl[stack[1]]
 
 # Swap two frames in the image
@@ -18,7 +22,7 @@ def swap():
     if len(stack)==2:
         shl[stack[0]],shl[stack[1]]=shl[stack[1]],shl[stack[0]]
         stack=[]
-        win()
+        iwin()
 
 # Identify spatial location and swap frames
 def spacial_location_check(cx,cy):
@@ -55,6 +59,7 @@ if __name__ == '__main__':
     for i in range(npiezas):
         for j in range(npiezas):
             shl.append(imgx[bl[i]:bl[i+1],bl[j]:bl[j+1]])
+    sshl=shl.copy()
     random.shuffle(shl)
 
     # Capture live video
@@ -72,10 +77,21 @@ if __name__ == '__main__':
     prev = False
     act = False    
 
+    gifc = 0
+    vel=5
 
     while True:        
         # Capture and process image frame from video
-        success, f = fin.read()
+
+        if win:
+            gifc+=1
+            if gifc==1:
+                success, f = fin.read()
+            gifc%=vel
+
+        # if type(f) != type(None):
+        #     f = cv2.resize(f,(si+200,si), fx = 0.1, fy = 0.1)
+        #     cv2.imshow("output2", f)
 
         success, image = cap.read()
         image=cv2.flip(image,1)
@@ -92,6 +108,11 @@ if __name__ == '__main__':
                 else:
                     image[bl[i]:bl[i+1],bl[j]:bl[j+1]]=shl[ck]
                 ck+=1
+        
+        if win and type(f) != type(None):
+            f = cv2.resize(f,(si,si), fx = 0.1, fy = 0.1)
+            image[0:si,0:si]=f[0:si,0:si]
+                
                 
         # Locate spatial location of finger and mark image frame piece and swap pieces
         if results.multi_hand_landmarks:
@@ -137,9 +158,6 @@ if __name__ == '__main__':
 
             prev = act
         
-
-        if type(f) != type(None):
-            cv2.imshow("output", f)
         cv2.imshow("output", image)
         if (cv2.waitKey(1) & 0xFF == ord('q')):
             break
