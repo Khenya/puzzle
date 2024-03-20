@@ -3,14 +3,20 @@ import numpy as np
 import mediapipe as mp
 import random
 
-npiezas = 4
+npiezas = 2
+#npiezas = input('¿Cuantas piezas quieres?')
 patito = npiezas * npiezas
 rad = 25
 
 # ganaste???
-def win():
-    global stack,shl
-    # shl[stack[0]],shl[stack[1]]
+# ganaste???
+def win(shl):
+    global winArray
+    if shl == winArray:
+        return True
+    else:
+        return False
+
 
 # Swap two frames in the image
 def swap():
@@ -18,7 +24,10 @@ def swap():
     if len(stack)==2:
         shl[stack[0]],shl[stack[1]]=shl[stack[1]],shl[stack[0]]
         stack=[]
-        win()
+        print("ficha movida")
+        if win(shl):
+            print ("GANASTE!!!!!!!!!!!!")
+
 
 # Identify spatial location and swap frames
 def spacial_location_check(cx,cy):
@@ -33,6 +42,8 @@ def spacial_location_check(cx,cy):
     return -1
 
 if __name__ == '__main__':
+    
+
     bxs = np.full((npiezas, npiezas, 2), 0)
     bxl = np.full((npiezas, npiezas, 2), 0)
     si = 600
@@ -47,16 +58,20 @@ if __name__ == '__main__':
 
         
     # Load Puzzle image, split image into pieces and randomly shuffle the frames
-    imgx = cv2.imread(r'img.jpg')
+    imgx = cv2.imread(r'perry.jpg')
     fin = cv2.VideoCapture(r'boom.gif')
     
     imgx = cv2.resize(imgx,(si,si), fx = 0.1, fy = 0.1)
     stack,x,shl=[],[],[]
+    winArray = []
     for i in range(npiezas):
         for j in range(npiezas):
             shl.append(imgx[bl[i]:bl[i+1],bl[j]:bl[j+1]])
+            winArray.append(imgx[bl[i]:bl[i+1],bl[j]:bl[j+1]])
+    #print ("array:",shl)
     random.shuffle(shl)
-
+    
+    #print ("win array es:", winArray)
     # Capture live video
     cap = cv2.VideoCapture(0)
     
